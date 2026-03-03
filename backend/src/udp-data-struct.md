@@ -384,8 +384,10 @@ F32 Speed;
 
 F32 Power;
 
+// 扭矩
 F32 Torque;
 
+// 胎温
 F32 TireTempFrontLeft;
 
 F32 TireTempFrontRight;
@@ -394,8 +396,10 @@ F32 TireTempRearLeft;
 
 F32 TireTempRearRight;
 
+// 涡轮压力
 F32 Boost;
 
+// 油量
 F32 Fuel;
 
 F32 DistanceTraveled;
@@ -414,14 +418,18 @@ U8 RacePosition;
 
 U8 Accel;
 
+// 刹车
 U8 Brake;
 
+// 离合器
 U8 Clutch;
 
+// 手刹
 U8 HandBrake;
 
 U8 Gear;
 
+// 转向
 S8 Steer;
 
 S8 NormalizedDrivingLine;
