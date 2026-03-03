@@ -2,6 +2,7 @@ package wsserver
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 	"net/http"
 
@@ -10,6 +11,12 @@ import (
 
 const DefaultAddr = ":8765"
 
+// Command 是前端发往后端的控制命令
+type Command struct {
+	Type    string `json:"type"`
+	UDPPort int    `json:"udpPort,omitempty"`
+}
+
 var upgrader = websocket.Upgrader{
 	// 开发阶段允许所有来源（Electron 的 file:// 协议）
 	CheckOrigin: func(r *http.Request) bool { return true },
@@ -17,8 +24,9 @@ var upgrader = websocket.Upgrader{
 
 // Server 是 HTTP + WebSocket 服务器
 type Server struct {
-	addr string
-	hub  *Hub
+	addr      string
+	hub       *Hub
+	CommandCh chan Command
 }
 
 func New(addr string) *Server {
@@ -26,8 +34,9 @@ func New(addr string) *Server {
 		addr = DefaultAddr
 	}
 	return &Server{
-		addr: addr,
-		hub:  NewHub(),
+		addr:      addr,
+		hub:       NewHub(),
+		CommandCh: make(chan Command, 8),
 	}
 }
 
@@ -62,12 +71,20 @@ func (s *Server) handleWS(w http.ResponseWriter, r *http.Request) {
 	s.hub.register(conn)
 	log.Printf("[WS] client connected: %s", r.RemoteAddr)
 
-	// 保持连接，等待客户端断开
+	// 读取客户端消息（命令）
 	for {
-		if _, _, err := conn.ReadMessage(); err != nil {
+		_, msg, err := conn.ReadMessage()
+		if err != nil {
 			s.hub.unregister(conn)
 			log.Printf("[WS] client disconnected: %s", r.RemoteAddr)
 			return
+		}
+		var cmd Command
+		if json.Unmarshal(msg, &cmd) == nil && cmd.Type != "" {
+			select {
+			case s.CommandCh <- cmd:
+			default:
+			}
 		}
 	}
 }

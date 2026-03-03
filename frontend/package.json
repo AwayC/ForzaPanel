@@ -1,0 +1,22 @@
+{
+  "name": "forza-telemetry-frontend",
+  "version": "1.0.0",
+  "description": "Forza 遥测数据监控面板",
+  "main": "out/main/index.js",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "@electron-toolkit/tsconfig": "^1.0.1",
+    "electron": "^33.0.0",
+    "electron-vite": "^2.3.0",
+    "typescript": "^5.7.2",
+    "vite": "^5.0.0"
+  },
+  "dependencies": {
+    "@electron-toolkit/utils": "^3.0.0"
+  }
+}

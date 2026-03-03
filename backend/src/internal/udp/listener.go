@@ -1,4 +1,4 @@
-package udp
+﻿package udp
 
 import (
 	"context"
@@ -35,14 +35,18 @@ func New(port int) *Listener {
 }
 
 // Start 阻塞式监听，建议在 goroutine 中调用
-// ctx 取消或调用 Stop() 均可安全退出
+// ctx 取消或调用 Stop() 均可安全退出；退出后自动关闭 DataCh 和 ErrCh
 func (l *Listener) Start(ctx context.Context) error {
 	conn, err := net.ListenUDP("udp4", &net.UDPAddr{Port: l.port})
 	if err != nil {
 		return fmt.Errorf("listen :%d: %w", l.port, err)
 	}
 	l.conn = conn
-	defer conn.Close()
+	defer func() {
+		conn.Close()
+		close(l.DataCh)
+		close(l.ErrCh)
+	}()
 
 	log.Printf("[UDP] listening on :%d", l.port)
 

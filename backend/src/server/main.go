@@ -5,53 +5,97 @@ import (
 	"encoding/json"
 	"log"
 	"os/signal"
+	"sync"
 	"syscall"
 
 	"forza/backend/src/internal/udp"
 	wsserver "forza/backend/src/internal/websocket"
 )
 
+// envelope 包裹所有 WebSocket 消息，通过 type 字段区分类型
+type envelope struct {
+	Type    string `json:"type"`
+	UDPPort int    `json:"udpPort,omitempty"`
+	Data    any    `json:"data,omitempty"`
+}
+
 func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
-	udpListener := udp.New(0)       // UDP :5300
-	ws := wsserver.New(":8765")     // WebSocket :8765
+	ws := wsserver.New(":8765")
 
-	go handleErrors(udpListener)
-	go broadcast(udpListener, ws)
+	// 可热重启的 UDP 管理器，默认端口 5300
+	mgr := newUDPManager(ctx, ws)
+	mgr.start(5300)
 
-	// WebSocket 服务器独立 goroutine
+	// 处理前端下发的命令
 	go func() {
-		if err := ws.Start(ctx); err != nil {
-			log.Fatal("[WS]", err)
+		for cmd := range ws.CommandCh {
+			if cmd.Type == "setUDPPort" && cmd.UDPPort > 0 && cmd.UDPPort < 65536 {
+				log.Printf("[config] UDP port -> %d", cmd.UDPPort)
+				mgr.start(cmd.UDPPort)
+				b, _ := json.Marshal(envelope{Type: "config", UDPPort: cmd.UDPPort})
+				ws.Hub().Broadcast(b)
+			}
 		}
 	}()
 
-	// UDP 监听阻塞主流程，ctx 取消后退出
-	if err := udpListener.Start(ctx); err != nil {
-		log.Fatal(err)
+	// WebSocket 服务器阻塞直到 ctx 取消
+	if err := ws.Start(ctx); err != nil {
+		log.Fatal("[WS]", err)
 	}
 	log.Println("shutdown")
 }
 
-// broadcast 读取 UDP 解析数据，序列化为 JSON 后广播给所有 WS 客户端
-func broadcast(l *udp.Listener, ws *wsserver.Server) {
-	for data := range l.DataCh {
-		if data.IsRaceOn == 0 {
-			continue
-		}
-		b, err := json.Marshal(data)
-		if err != nil {
-			log.Println("[JSON]", err)
-			continue
-		}
-		ws.Hub().Broadcast(b)
-	}
+// ── udpManager ────────────────────────────────────────────────────────────────
+
+type udpManager struct {
+	rootCtx context.Context
+	ws      *wsserver.Server
+	mu      sync.Mutex
+	cancel  context.CancelFunc
 }
 
-func handleErrors(l *udp.Listener) {
-	for err := range l.ErrCh {
-		log.Println("[warn]", err)
-	}
+func newUDPManager(ctx context.Context, ws *wsserver.Server) *udpManager {
+	return &udpManager{rootCtx: ctx, ws: ws}
 }
+
+func (m *udpManager) start(port int) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	if m.cancel != nil {
+		m.cancel() // 停止旧监听器
+	}
+
+	ctx, cancel := context.WithCancel(m.rootCtx)
+	m.cancel = cancel
+	l := udp.New(port)
+
+	go func() {
+		for data := range l.DataCh {
+			if data.IsRaceOn == 0 {
+				continue
+			}
+			b, err := json.Marshal(envelope{Type: "telemetry", Data: data})
+			if err != nil {
+				continue
+			}
+			m.ws.Hub().Broadcast(b)
+		}
+	}()
+
+	go func() {
+		for err := range l.ErrCh {
+			log.Println("[warn]", err)
+		}
+	}()
+
+	go func() {
+		if err := l.Start(ctx); err != nil {
+			log.Println("[UDP]", err)
+		}
+	}()
+}
+

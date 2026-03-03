@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Forza Telemetry</title>
+  </head>
+  <body>
+    <header>
+      <h1>FORZA TELEMETRY</h1>
+      <nav class="tabs">
+        <button class="tab active" data-tab="dashboard">仪表盘</button>
+        <button class="tab" data-tab="charts">图表</button>
+        <button class="tab" data-tab="export">导出</button>
+        <button class="tab" data-tab="settings">设置</button>
+      </nav>
+      <span id="status" class="status-off">○ 等待连接...</span>
+    </header>
+
+    <div id="tab-dashboard" class="tab-panel">
+      <div id="app"></div>
+    </div>
+    <div id="tab-charts" class="tab-panel hidden">
+      <div id="charts"></div>
+    </div>
+    <div id="tab-export" class="tab-panel hidden">
+      <div id="export-panel"></div>
+    </div>
+    <div id="tab-settings" class="tab-panel hidden">
+      <div id="settings-panel"></div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
+

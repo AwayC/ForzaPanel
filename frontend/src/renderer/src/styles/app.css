@@ -1,0 +1,704 @@
+/* ── 变量 ────────────────────────────────────────────────────────────────── */
+:root {
+  --bg: #0d0d0d;
+  --surface: #161616;
+  --surface2: #1e1e1e;
+  --border: #2a2a2a;
+  --text: #e0e0e0;
+  --muted: #555;
+  --accent: #00c8ff;
+  --green: #00e676;
+  --red: #ff1744;
+  --yellow: #ffd600;
+  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  font-size: 13px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 6px 14px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+header h1 {
+  font-size: 14px;
+  color: var(--accent);
+  letter-spacing: 2px;
+  white-space: nowrap;
+}
+
+/* ── Tabs ────────────────────────────────────────────────────────────────── */
+.tabs {
+  display: flex;
+  gap: 2px;
+  flex: 1;
+}
+
+.tab {
+  background: transparent;
+  color: var(--muted);
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 4px 14px;
+  cursor: pointer;
+  font-size: 13px;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
+}
+.tab:hover {
+  color: var(--text);
+}
+.tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.status-on {
+  color: var(--green);
+  white-space: nowrap;
+  font-size: 12px;
+}
+.status-off {
+  color: var(--muted);
+  white-space: nowrap;
+  font-size: 12px;
+}
+
+/* ── Tab Panels ─────────────────────────────────────────────────────────── */
+.tab-panel {
+  flex: 1;
+  overflow: auto;
+  padding: 10px;
+  display: block;
+}
+.tab-panel.hidden {
+  display: none;
+}
+
+/* ── Panel Toolbar ───────────────────────────────────────────────────────── */
+.panel-toolbar {
+  position: relative;
+  margin-bottom: 8px;
+}
+
+.panel-toggle-btn {
+  background: var(--surface2);
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-size: 12px;
+}
+.panel-toggle-btn:hover {
+  color: var(--text);
+}
+
+.panel-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 100;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 4px 16px;
+  min-width: 360px;
+  box-shadow: 0 4px 20px #000a;
+}
+
+.panel-check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  color: var(--text);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.panel-check input {
+  accent-color: var(--accent);
+}
+
+/* ── Dashboard Grid ──────────────────────────────────────────────────────── */
+.dashboard {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+.card-title {
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+/* ── Draggable / Floating Card ───────────────────────────────────────────── */
+.card-floating {
+  position: fixed;
+  z-index: 900;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.6);
+  resize: both;
+  overflow: auto;
+}
+.card-draggable {
+  cursor: grab;
+  user-select: none;
+}
+.card-draggable:active {
+  cursor: grabbing;
+}
+
+/* ── G-Force Panel ───────────────────────────────────────────────────────── */
+.gforce-panel {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.gforce-panel canvas {
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.35);
+  flex-shrink: 0;
+}
+.gforce-vals {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 100px;
+}
+
+/* ── Core Card ───────────────────────────────────────────────────────────── */
+.core-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+}
+
+.big-block {
+  text-align: center;
+}
+
+.label {
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.big-val {
+  font-size: 52px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text);
+}
+.big-val.accent {
+  color: var(--accent);
+}
+.unit {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* ── Progress Bars ───────────────────────────────────────────────────────── */
+.bar-track {
+  height: 7px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.mt4 {
+  margin-top: 4px;
+}
+.bar {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 80ms linear;
+  width: 0%;
+}
+
+/* ── KV Grid ─────────────────────────────────────────────────────────────── */
+.kv-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 12px;
+}
+
+.kv-item .kv-label {
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.kv-item .kv-val {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.kv-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.kv-label {
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.kv-val {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+.kv-val.accent {
+  color: var(--accent);
+}
+.kv-val.mono {
+  font-family: monospace;
+}
+.mt {
+  margin-top: 8px;
+}
+.ml {
+  margin-left: 12px;
+}
+
+/* ── Tire Grid ───────────────────────────────────────────────────────────── */
+.tire-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.tire-cell {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 5px 8px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  transition: border-color 0.3s;
+}
+
+.tire-label {
+  color: var(--muted);
+  font-size: 10px;
+  align-self: center;
+}
+
+/* ── Tire Detail Table ───────────────────────────────────────────────────── */
+.tire-detail-grid {
+  display: grid;
+  grid-template-columns: 60px 1fr 1fr 1fr 1fr;
+  gap: 4px 8px;
+  font-size: 12px;
+  align-items: center;
+}
+.td-header {
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+}
+.td-label {
+  color: var(--muted);
+  font-size: 10px;
+}
+.td-val {
+  text-align: center;
+  font-family: monospace;
+}
+
+/* ── Tire Vertical Bars ──────────────────────────────────────────────────── */
+.tire-vbar-section {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.tire-vbar-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.tire-vbar-title {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 600;
+}
+.tire-vbar-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 110px;
+}
+.tire-vbar-label {
+  font-size: 9px;
+  color: var(--muted);
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  align-self: flex-end;
+  margin-bottom: 18px;
+}
+.tire-vbar-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  height: 100%;
+  gap: 4px;
+}
+.tire-vbar-track {
+  flex: 1;
+  width: 28px;
+  background: var(--surface-alt, rgba(255, 255, 255, 0.06));
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+.tire-vbar-fill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 0%;
+  border-radius: 3px;
+  transition:
+    height 0.08s ease-out,
+    background 0.08s ease-out;
+}
+.tire-vbar-num {
+  font-size: 10px;
+  font-family: monospace;
+  color: var(--fg);
+  min-width: 32px;
+  text-align: center;
+}
+
+/* ── Charts ──────────────────────────────────────────────────────────────── */
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 12px;
+}
+
+.chart-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  overflow: hidden;
+}
+
+.chart-title {
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.chart-canvas {
+  display: block;
+  width: 100%;
+  border-radius: 4px;
+}
+
+/* ── Settings / Export ───────────────────────────────────────────────────── */
+.settings-panel,
+.export-panel {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.settings-title {
+  font-size: 15px;
+  color: var(--accent);
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+}
+
+.settings-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+
+.settings-label {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.settings-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.settings-input {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 5px 10px;
+  font-size: 13px;
+  width: 100px;
+  outline: none;
+}
+.settings-input:focus {
+  border-color: var(--accent);
+}
+
+.settings-btn {
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 5px 14px;
+  cursor: pointer;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.settings-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.settings-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.settings-btn.btn-red {
+  color: var(--red);
+  border-color: var(--red);
+}
+.settings-btn.btn-green {
+  color: var(--green);
+  border-color: var(--green);
+}
+.settings-btn.btn-muted {
+  color: var(--muted);
+}
+
+.settings-hint {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 8px;
+  line-height: 1.5;
+}
+
+.settings-status {
+  font-size: 12px;
+  margin-top: 6px;
+  display: block;
+}
+
+.export-controls {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.export-info {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.csv-preview {
+  font-family: monospace;
+  font-size: 10px;
+  color: var(--muted);
+  background: var(--bg);
+  border-radius: 4px;
+  padding: 8px;
+  margin-top: 6px;
+  word-break: break-all;
+  line-height: 1.6;
+}
+
+.settings-guide {
+  color: var(--muted);
+  font-size: 12px;
+  padding-left: 18px;
+  line-height: 2;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+
+header h1 {
+  font-size: 15px;
+  color: var(--accent);
+  letter-spacing: 2px;
+}
+
+.status-on {
+  color: var(--green);
+}
+.status-off {
+  color: var(--muted);
+}
+
+#app {
+  flex: 1;
+  overflow: auto;
+  padding: 12px;
+}
+
+.dashboard {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+
+.label {
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.mt {
+  margin-top: 10px;
+}
+
+.value {
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--accent);
+}
+
+.value-sm {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text);
+  margin-top: 2px;
+}
+
+.unit {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.big-number .value {
+  font-size: 64px;
+}
+
+/* 进度条 */
+.bar-track {
+  margin-top: 6px;
+  height: 8px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bar {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 80ms linear;
+  width: 0%;
+}
+
+.rpm-color {
+  background: var(--accent);
+}
+.accel-color {
+  background: var(--green);
+}
+.brake-color {
+  background: var(--red);
+}
+.best-color {
+  color: var(--yellow);
+}
+
+/* 胎温格 */
+.tire-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.tire-cell {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+}
+
+.tire-label {
+  color: var(--muted);
+  font-size: 11px;
+}
