@@ -3,18 +3,21 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Forza Telemetry</title>
+    <title>Forza Panel</title>
   </head>
   <body>
     <header>
-      <h1>FORZA TELEMETRY</h1>
+      <h1>FORZA PANEL</h1>
       <nav class="tabs">
         <button class="tab active" data-tab="dashboard">仪表盘</button>
         <button class="tab" data-tab="charts">图表</button>
+        <button class="tab" data-tab="route">🗭 路线</button>
         <button class="tab" data-tab="export">导出</button>
         <button class="tab" data-tab="settings">设置</button>
       </nav>
       <span id="status" class="status-off">○ 等待连接...</span>
+      <span id="udp-status" class="status-off udp-status">◆ UDP 未知</span>
+      <button id="udp-toggle-btn" class="udp-ctrl-btn" disabled>► 开始监听</button>
     </header>
 
     <div id="tab-dashboard" class="tab-panel">
@@ -22,6 +25,9 @@
     </div>
     <div id="tab-charts" class="tab-panel hidden">
       <div id="charts"></div>
+    </div>
+    <div id="tab-route" class="tab-panel hidden">
+      <div id="route-map"></div>
     </div>
     <div id="tab-export" class="tab-panel hidden">
       <div id="export-panel"></div>

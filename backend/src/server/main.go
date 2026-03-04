@@ -14,9 +14,10 @@ import (
 
 // envelope 包裹所有 WebSocket 消息，通过 type 字段区分类型
 type envelope struct {
-	Type    string `json:"type"`
-	UDPPort int    `json:"udpPort,omitempty"`
-	Data    any    `json:"data,omitempty"`
+	Type      string `json:"type"`
+	UDPPort   int    `json:"udpPort,omitempty"`
+	Listening bool   `json:"listening"`
+	Data      any    `json:"data,omitempty"`
 }
 
 func main() {
@@ -32,11 +33,32 @@ func main() {
 	// 处理前端下发的命令
 	go func() {
 		for cmd := range ws.CommandCh {
-			if cmd.Type == "setUDPPort" && cmd.UDPPort > 0 && cmd.UDPPort < 65536 {
-				log.Printf("[config] UDP port -> %d", cmd.UDPPort)
-				mgr.start(cmd.UDPPort)
-				b, _ := json.Marshal(envelope{Type: "config", UDPPort: cmd.UDPPort})
-				ws.Hub().Broadcast(b)
+			switch cmd.Type {
+			case "setUDPPort":
+				if cmd.UDPPort > 0 && cmd.UDPPort < 65536 {
+					log.Printf("[config] UDP port -> %d", cmd.UDPPort)
+					mgr.start(cmd.UDPPort)
+					b, _ := json.Marshal(envelope{Type: "config", UDPPort: cmd.UDPPort, Listening: true})
+					ws.Hub().Broadcast(b)
+					broadcastUDPStatus(ws, mgr)
+				}
+			case "startUDP":
+				port := cmd.UDPPort
+				if port <= 0 {
+					port = mgr.port()
+				}
+				if port <= 0 {
+					port = 5300
+				}
+				log.Printf("[config] start UDP on port %d", port)
+				mgr.start(port)
+				broadcastUDPStatus(ws, mgr)
+			case "stopUDP":
+				log.Println("[config] stop UDP")
+				mgr.stop()
+				broadcastUDPStatus(ws, mgr)
+			case "getStatus":
+				broadcastUDPStatus(ws, mgr)
 			}
 		}
 	}()
@@ -48,17 +70,50 @@ func main() {
 	log.Println("shutdown")
 }
 
+func broadcastUDPStatus(ws *wsserver.Server, mgr *udpManager) {
+	b, _ := json.Marshal(envelope{
+		Type:      "udpStatus",
+		Listening: mgr.listening(),
+		UDPPort:   mgr.port(),
+	})
+	ws.Hub().Broadcast(b)
+}
+
 // ── udpManager ────────────────────────────────────────────────────────────────
 
 type udpManager struct {
-	rootCtx context.Context
-	ws      *wsserver.Server
-	mu      sync.Mutex
-	cancel  context.CancelFunc
+	rootCtx   context.Context
+	ws        *wsserver.Server
+	mu        sync.Mutex
+	cancel    context.CancelFunc
+	curPort   int
+	isRunning bool
 }
 
 func newUDPManager(ctx context.Context, ws *wsserver.Server) *udpManager {
 	return &udpManager{rootCtx: ctx, ws: ws}
+}
+
+func (m *udpManager) port() int {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	return m.curPort
+}
+
+func (m *udpManager) listening() bool {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	return m.isRunning
+}
+
+func (m *udpManager) stop() {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if m.cancel != nil {
+		m.cancel()
+		m.cancel = nil
+	}
+	m.isRunning = false
 }
 
 func (m *udpManager) start(port int) {
@@ -71,6 +126,8 @@ func (m *udpManager) start(port int) {
 
 	ctx, cancel := context.WithCancel(m.rootCtx)
 	m.cancel = cancel
+	m.curPort = port
+	m.isRunning = true
 	l := udp.New(port)
 
 	go func() {

@@ -105,6 +105,8 @@ export interface TelemetryData {
   HandBrake: number;
   Gear: number;
   Steer: number; // -127~+127
+  NormalizedDrivingLine: number; // -127~+127，0=理想赛线
+  NormalizedAIBrakeDifference: number; // AI 制动差值
 
   // ── Ext (FM8) ─────────────────────────
   TireWearFL: number;

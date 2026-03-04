@@ -84,6 +84,37 @@ header h1 {
   white-space: nowrap;
   font-size: 12px;
 }
+.udp-status {
+  min-width: 90px;
+}
+.udp-ctrl-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 5px;
+  padding: 3px 11px;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+.udp-ctrl-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.udp-ctrl-btn.udp-ctrl-stop {
+  border-color: var(--red);
+  color: var(--red);
+}
+.udp-ctrl-btn.udp-ctrl-start {
+  border-color: var(--green);
+  color: var(--green);
+}
+.udp-ctrl-btn:not(:disabled):hover {
+  background: rgba(255, 255, 255, 0.14);
+}
 
 /* ── Tab Panels ─────────────────────────────────────────────────────────── */
 .tab-panel {
@@ -94,6 +125,24 @@ header h1 {
 }
 .tab-panel.hidden {
   display: none;
+}
+#tab-route {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+#tab-route:has(.rm-collapsed) {
+  flex: 0 0 auto;
+}
+#route-map {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+#route-map:has(.rm-collapsed) {
+  flex: 0 0 auto;
 }
 
 /* ── Panel Toolbar ───────────────────────────────────────────────────────── */
@@ -187,6 +236,12 @@ header h1 {
   display: flex;
   gap: 12px;
   align-items: flex-start;
+}
+.gforce-plot-wrap {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  flex-shrink: 0;
 }
 .gforce-panel canvas {
   border-radius: 6px;
@@ -436,6 +491,100 @@ header h1 {
   display: block;
   width: 100%;
   border-radius: 4px;
+}
+
+/* ── Route Map ───────────────────────────────────────────────────────────── */
+.rm-wrap {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  gap: 0;
+}
+.rm-wrap.rm-collapsed {
+  flex: 0 0 auto;
+}
+.rm-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  transition: max-height 0.25s ease;
+  max-height: 2000px;
+}
+.rm-wrap.rm-collapsed .rm-body {
+  max-height: 0;
+  overflow: hidden;
+}
+.rm-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.rm-divider {
+  width: 1px;
+  height: 16px;
+  background: var(--border);
+  margin: 0 2px;
+  flex-shrink: 0;
+}
+.rm-btn {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  border-radius: 5px;
+  padding: 3px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  transition:
+    background 0.12s,
+    color 0.12s;
+}
+.rm-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: var(--text);
+}
+.rm-btn.rm-active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.rm-btn.rm-toggle {
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+.rm-info {
+  font-size: 11px;
+  color: var(--muted);
+  margin-left: 4px;
+}
+.rm-canvases {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+.rm-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.rm-hidden {
+  display: none !important;
+}
+.rm-hint {
+  padding: 4px 8px;
+  font-size: 10px;
+  color: var(--muted);
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
 }
 
 /* ── Settings / Export ───────────────────────────────────────────────────── */

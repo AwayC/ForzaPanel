@@ -2,6 +2,7 @@ import type { TelemetryData } from "../types/telemetry";
 
 type TelemetryHandler = (data: TelemetryData) => void;
 type ConfigHandler = (udpPort: number) => void;
+type UDPStatusHandler = (listening: boolean, port: number) => void;
 
 export const DEFAULT_WS_URL = "ws://localhost:8765/ws";
 const RECONNECT_MS = 2000;
@@ -11,6 +12,7 @@ export class TelemetryWS {
   private url: string;
   private telemetryHandlers: Set<TelemetryHandler> = new Set();
   private configHandlers: Set<ConfigHandler> = new Set();
+  private udpStatusHandlers: Set<UDPStatusHandler> = new Set();
   private stopped = false;
 
   constructor(url = DEFAULT_WS_URL) {
@@ -44,6 +46,8 @@ export class TelemetryWS {
       document.dispatchEvent(
         new CustomEvent("ws:status", { detail: "connected" }),
       );
+      // 请求后端当前 UDP 状态
+      this.send({ type: "getStatus" });
     };
 
     this.ws.onmessage = (e) => {
@@ -52,11 +56,19 @@ export class TelemetryWS {
           type: string;
           data?: TelemetryData;
           udpPort?: number;
+          listening?: boolean;
         };
         if (msg.type === "telemetry" && msg.data) {
           this.telemetryHandlers.forEach((h) => h(msg.data!));
         } else if (msg.type === "config" && msg.udpPort) {
           this.configHandlers.forEach((h) => h(msg.udpPort!));
+        } else if (msg.type === "udpStatus") {
+          const listening = msg.listening ?? false;
+          const port = msg.udpPort ?? 0;
+          this.udpStatusHandlers.forEach((h) => h(listening, port));
+          document.dispatchEvent(
+            new CustomEvent("ws:udpStatus", { detail: { listening, port } }),
+          );
         }
       } catch {
         /* ignore */
@@ -81,6 +93,11 @@ export class TelemetryWS {
   onConfig(handler: ConfigHandler): () => void {
     this.configHandlers.add(handler);
     return () => this.configHandlers.delete(handler);
+  }
+
+  onUDPStatus(handler: UDPStatusHandler): () => void {
+    this.udpStatusHandlers.add(handler);
+    return () => this.udpStatusHandlers.delete(handler);
   }
 
   stop(): void {

@@ -41,6 +41,8 @@ export class Dashboard {
   private menuOpen = false;
   private gCanvas: HTMLCanvasElement | null = null;
   private gCtx: CanvasRenderingContext2D | null = null;
+  private gYCanvas: HTMLCanvasElement | null = null;
+  private gYCtx: CanvasRenderingContext2D | null = null;
   private gLatest = { gx: 0, gy: 0, gz: 0 };
 
   constructor(container: HTMLElement) {
@@ -221,6 +223,7 @@ export class Dashboard {
     this.t("av-y", f(d.AngularVelocityY, 3));
     this.t("av-z", f(d.AngularVelocityZ, 3));
     this.drawGForce();
+    this.drawYGauge();
 
     // posture
     const deg = (r: number): string => f((r * 180) / Math.PI, 1) + "\u00b0";
@@ -469,11 +472,14 @@ export class Dashboard {
   private tplGForce(): string {
     return `
       <div class="gforce-panel">
-        <canvas id="gforce-canvas" width="180" height="180"></canvas>
+        <div class="gforce-plot-wrap">
+          <canvas id="gforce-canvas" width="180" height="180"></canvas>
+          <canvas id="gforce-y-gauge" width="30" height="180"></canvas>
+        </div>
         <div class="gforce-vals">
-          ${this.kv("\u7eb5\u5411 G", "acc-x", "g")}
-          ${this.kv("\u4fa7\u5411 G", "acc-y", "g")}
-          ${this.kv("\u5782\u76f4 G", "acc-z", "g")}
+          ${this.kv("\u5076\u5411 G (X)", "acc-x", "g")}
+          ${this.kv("\u7eb5\u5411 G (Z)", "acc-z", "g")}
+          ${this.kv("\u5782\u76f4 G (Y)", "acc-y", "g")}
           ${this.kv("\u89d2\u901f X", "av-x", "rad/s")}
           ${this.kv("\u89d2\u901f Y", "av-y", "rad/s")}
           ${this.kv("\u89d2\u901f Z", "av-z", "rad/s")}
@@ -541,20 +547,34 @@ export class Dashboard {
   /* ── G-Force canvas ─────────────────────────────────────────────────────── */
 
   private initGForceCanvas(): void {
-    const c = this.root.querySelector<HTMLCanvasElement>("#gforce-canvas");
-    if (!c) return;
-    // HiDPI
     const dpr = window.devicePixelRatio || 1;
-    const size = 180;
-    c.width = size * dpr;
-    c.height = size * dpr;
-    c.style.width = size + "px";
-    c.style.height = size + "px";
-    const ctx = c.getContext("2d")!;
-    ctx.scale(dpr, dpr);
-    this.gCanvas = c;
-    this.gCtx = ctx;
+    // main XZ canvas
+    const c = this.root.querySelector<HTMLCanvasElement>("#gforce-canvas");
+    if (c) {
+      const size = 180;
+      c.width = size * dpr;
+      c.height = size * dpr;
+      c.style.width = size + "px";
+      c.style.height = size + "px";
+      const ctx = c.getContext("2d")!;
+      ctx.scale(dpr, dpr);
+      this.gCanvas = c;
+      this.gCtx = ctx;
+    }
+    // Y gauge canvas
+    const cy = this.root.querySelector<HTMLCanvasElement>("#gforce-y-gauge");
+    if (cy) {
+      cy.width = 30 * dpr;
+      cy.height = 180 * dpr;
+      cy.style.width = "30px";
+      cy.style.height = "180px";
+      const ctx2 = cy.getContext("2d")!;
+      ctx2.scale(dpr, dpr);
+      this.gYCanvas = cy;
+      this.gYCtx = ctx2;
+    }
     this.drawGForce();
+    this.drawYGauge();
   }
 
   private drawGForce(): void {
@@ -564,13 +584,12 @@ export class Dashboard {
     const cx = S / 2;
     const cy = S / 2;
     const maxG = 2;
-    const scale = (cx - 10) / maxG; // pixels per G
+    const scale = (cx - 14) / maxG;
 
-    // clear
     ctx.clearRect(0, 0, S, S);
 
     // background circles
-    ctx.strokeStyle = "rgba(255,255,255,0.12)";
+    ctx.strokeStyle = "rgba(255,255,255,0.1)";
     ctx.lineWidth = 1;
     for (let g = 0.5; g <= maxG; g += 0.5) {
       ctx.beginPath();
@@ -578,45 +597,147 @@ export class Dashboard {
       ctx.stroke();
     }
 
-    // cross-hair
-    ctx.strokeStyle = "rgba(255,255,255,0.25)";
+    // cross-hair axes
+    ctx.strokeStyle = "rgba(255,255,255,0.22)";
     ctx.beginPath();
-    ctx.moveTo(cx, 4);
-    ctx.lineTo(cx, S - 4);
-    ctx.moveTo(4, cy);
-    ctx.lineTo(S - 4, cy);
+    ctx.moveTo(cx, 6);
+    ctx.lineTo(cx, S - 6);
+    ctx.moveTo(6, cy);
+    ctx.lineTo(S - 6, cy);
     ctx.stroke();
 
-    // labels
-    ctx.fillStyle = "rgba(255,255,255,0.35)";
-    ctx.font = "9px monospace";
+    // axis labels
+    ctx.fillStyle = "rgba(255,255,255,0.45)";
+    ctx.font = "bold 9px monospace";
     ctx.textAlign = "center";
-    ctx.fillText("1G", cx + 1 * scale + 1, cy - 4);
-    ctx.fillText("2G", cx + 2 * scale + 1, cy - 4);
+    ctx.fillText("X\u2192", S - 8, cy - 4);
+    ctx.textAlign = "left";
+    ctx.fillText("\u2191Z", cx + 3, 10);
 
-    // dot – lateral = Y axis (AccY → screen X), longitudinal = X axis (AccX → screen Y inverted)
-    const { gx, gy } = this.gLatest;
-    const dotX = cx + gy * scale; // lateral → right is positive
-    const dotY = cy - gx * scale; // longitudinal → up is positive (braking)
+    // ring labels
+    ctx.fillStyle = "rgba(255,255,255,0.28)";
+    ctx.font = "8px monospace";
+    ctx.textAlign = "left";
+    ctx.fillText("1G", cx + 1 * scale + 2, cy - 3);
+    ctx.fillText("2G", cx + 2 * scale + 2, cy - 3);
 
-    // glow
-    const mag = Math.sqrt(gx * gx + gy * gy);
-    const hue = Math.max(0, 200 - mag * 200); // blue→red as magnitude grows
+    const { gx, gz } = this.gLatest;
+    const dotX = cx + gx * scale;
+    const dotY = cy - gz * scale;
+    const clampX = Math.max(8, Math.min(S - 8, dotX));
+    const clampY = Math.max(8, Math.min(S - 8, dotY));
+
+    const mag = Math.sqrt(gx * gx + gz * gz);
+    const hue = Math.max(0, 200 - mag * 100);
     const color = `hsl(${hue.toFixed(0)}, 100%, 55%)`;
 
+    // line from center to dot
+    ctx.save();
     ctx.shadowColor = color;
-    ctx.shadowBlur = 10;
+    ctx.shadowBlur = 5;
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.5;
+    ctx.globalAlpha = 0.6;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(clampX, clampY);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+
+    // dot
+    ctx.shadowBlur = 12;
     ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.arc(
-      Math.max(4, Math.min(S - 4, dotX)),
-      Math.max(4, Math.min(S - 4, dotY)),
-      5,
-      0,
-      Math.PI * 2,
-    );
+    ctx.arc(clampX, clampY, 5, 0, Math.PI * 2);
     ctx.fill();
-    ctx.shadowBlur = 0;
+    ctx.restore();
+
+    // G magnitude label near dot
+    if (mag > 0.05) {
+      const label = mag.toFixed(2) + "g";
+      const offX = clampX > cx ? 8 : -8;
+      const offY = clampY < cy ? -8 : 12;
+      ctx.font = "bold 10px monospace";
+      ctx.textAlign = clampX >= cx ? "left" : "right";
+      ctx.fillStyle = "rgba(0,0,0,0.6)";
+      ctx.fillText(label, clampX + offX + 1, clampY + offY + 1);
+      ctx.fillStyle = color;
+      ctx.fillText(label, clampX + offX, clampY + offY);
+    }
+  }
+
+  private drawYGauge(): void {
+    const ctx = this.gYCtx;
+    if (!ctx) return;
+    const W = 30;
+    const H = 180;
+    const maxG = 2;
+    const gy = this.gLatest.gy;
+    const trackX = 11;
+    const trackW = 8;
+    const pxPerG = (H / 2 - 14) / maxG;
+    const zeroY = H / 2;
+
+    ctx.clearRect(0, 0, W, H);
+
+    // track background
+    ctx.fillStyle = "rgba(255,255,255,0.06)";
+    ctx.beginPath();
+    ctx.roundRect(trackX, 10, trackW, H - 20, 4);
+    ctx.fill();
+
+    // fill bar from zero
+    const barH = Math.min(Math.abs(gy), maxG) * pxPerG;
+    const hue = Math.max(0, 200 - Math.abs(gy) * 100);
+    const color = `hsl(${hue.toFixed(0)}, 100%, 55%)`;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    if (gy >= 0) {
+      ctx.roundRect(trackX, zeroY - barH, trackW, barH, 3);
+    } else {
+      ctx.roundRect(trackX, zeroY, trackW, barH, 3);
+    }
+    ctx.fill();
+
+    // tick marks and labels
+    ctx.strokeStyle = "rgba(255,255,255,0.15)";
+    ctx.lineWidth = 1;
+    ctx.fillStyle = "rgba(255,255,255,0.38)";
+    ctx.font = "7px monospace";
+    ctx.textAlign = "right";
+    for (const g of [-2, -1, 0, 1, 2]) {
+      const y = zeroY - g * pxPerG;
+      const lbl = g > 0 ? "+" + g : String(g);
+      ctx.fillText(lbl, trackX - 2, y + 3);
+      ctx.beginPath();
+      ctx.moveTo(trackX, y);
+      ctx.lineTo(trackX + trackW, y);
+      ctx.stroke();
+    }
+
+    // zero line stronger
+    ctx.strokeStyle = "rgba(255,255,255,0.3)";
+    ctx.beginPath();
+    ctx.moveTo(trackX - 2, zeroY);
+    ctx.lineTo(trackX + trackW + 2, zeroY);
+    ctx.stroke();
+
+    // Y axis label
+    ctx.fillStyle = "rgba(255,255,255,0.45)";
+    ctx.font = "bold 8px monospace";
+    ctx.textAlign = "center";
+    ctx.fillText("Y", 15, H - 2);
+
+    // marker dot
+    const markerY = Math.max(12, Math.min(H - 12, zeroY - gy * pxPerG));
+    ctx.save();
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 8;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(trackX + trackW / 2, markerY, 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
   }
 
   /* ── Drag support ───────────────────────────────────────────────────────── */

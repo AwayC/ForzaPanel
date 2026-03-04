@@ -13,6 +13,6 @@ Start-Process powershell -ArgumentList "-NoExit", "-Command", "Set-Location '$PS
 Start-Sleep -Seconds 2
 
 # Start Electron frontend in a new window
-Start-Process powershell -ArgumentList "-NoExit", "-Command", "Set-Location '$PSScriptRoot\frontend'; npm run start"
+Start-Process powershell -ArgumentList "-NoExit", "-Command", "Set-Location '$PSScriptRoot\frontend'; npm run dev"
 
 Write-Host "Both services started." -ForegroundColor Green
