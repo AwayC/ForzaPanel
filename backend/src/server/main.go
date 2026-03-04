@@ -15,6 +15,7 @@ import (
 // envelope 包裹所有 WebSocket 消息，通过 type 字段区分类型
 type envelope struct {
 	Type      string `json:"type"`
+	UDPIP     string `json:"udpIP,omitempty"`
 	UDPPort   int    `json:"udpPort,omitempty"`
 	Listening bool   `json:"listening"`
 	Data      any    `json:"data,omitempty"`
@@ -26,32 +27,29 @@ func main() {
 
 	ws := wsserver.New(":8765")
 
-	// 可热重启的 UDP 管理器，默认端口 5300
+	// 可热重启的 UDP 管理器，默认 0.0.0.0:5300
 	mgr := newUDPManager(ctx, ws)
-	mgr.start(5300)
+	mgr.start("0.0.0.0", 5300)
 
 	// 处理前端下发的命令
 	go func() {
 		for cmd := range ws.CommandCh {
 			switch cmd.Type {
-			case "setUDPPort":
-				if cmd.UDPPort > 0 && cmd.UDPPort < 65536 {
-					log.Printf("[config] UDP port -> %d", cmd.UDPPort)
-					mgr.start(cmd.UDPPort)
-					b, _ := json.Marshal(envelope{Type: "config", UDPPort: cmd.UDPPort, Listening: true})
-					ws.Hub().Broadcast(b)
-					broadcastUDPStatus(ws, mgr)
-				}
+			case "setUDPConfig":
+				log.Printf("[config] UDP config -> %s:%d", cmd.UDPIP, cmd.UDPPort)
+				mgr.start(cmd.UDPIP, cmd.UDPPort)
+				broadcastUDPStatus(ws, mgr)
 			case "startUDP":
+				ip := cmd.UDPIP
 				port := cmd.UDPPort
+				if ip == "" {
+					ip = mgr.ip()
+				}
 				if port <= 0 {
 					port = mgr.port()
 				}
-				if port <= 0 {
-					port = 5300
-				}
-				log.Printf("[config] start UDP on port %d", port)
-				mgr.start(port)
+				log.Printf("[config] start UDP on %s:%d", ip, port)
+				mgr.start(ip, port)
 				broadcastUDPStatus(ws, mgr)
 			case "stopUDP":
 				log.Println("[config] stop UDP")
@@ -74,6 +72,7 @@ func broadcastUDPStatus(ws *wsserver.Server, mgr *udpManager) {
 	b, _ := json.Marshal(envelope{
 		Type:      "udpStatus",
 		Listening: mgr.listening(),
+		UDPIP:     mgr.ip(),
 		UDPPort:   mgr.port(),
 	})
 	ws.Hub().Broadcast(b)
@@ -86,12 +85,19 @@ type udpManager struct {
 	ws        *wsserver.Server
 	mu        sync.Mutex
 	cancel    context.CancelFunc
+	curIP     string
 	curPort   int
 	isRunning bool
 }
 
 func newUDPManager(ctx context.Context, ws *wsserver.Server) *udpManager {
 	return &udpManager{rootCtx: ctx, ws: ws}
+}
+
+func (m *udpManager) ip() string {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	return m.curIP
 }
 
 func (m *udpManager) port() int {
@@ -116,7 +122,7 @@ func (m *udpManager) stop() {
 	m.isRunning = false
 }
 
-func (m *udpManager) start(port int) {
+func (m *udpManager) start(ip string, port int) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -126,15 +132,16 @@ func (m *udpManager) start(port int) {
 
 	ctx, cancel := context.WithCancel(m.rootCtx)
 	m.cancel = cancel
+	m.curIP = ip
 	m.curPort = port
 	m.isRunning = true
-	l := udp.New(port)
+	l := udp.New(ip, port)
 
 	go func() {
 		for data := range l.DataCh {
-			if data.IsRaceOn == 0 {
-				continue
-			}
+			// 如果比赛未开始且没有数据包，则不广播
+			// 注意：某些情况下我们可能需要即使比赛没开始也显示数据（如在菜单中查看车辆信息）
+			// 但 GEMINI.md 要求在开始比赛时清空路线图，所以 IsRaceOn 还是很有用的
 			b, err := json.Marshal(envelope{Type: "telemetry", Data: data})
 			if err != nil {
 				continue
@@ -152,7 +159,10 @@ func (m *udpManager) start(port int) {
 	go func() {
 		if err := l.Start(ctx); err != nil {
 			log.Println("[UDP]", err)
+			m.mu.Lock()
+			m.isRunning = false
+			m.mu.Unlock()
+			broadcastUDPStatus(m.ws, m)
 		}
 	}()
 }
-

@@ -1,17 +1,20 @@
-/* ── 变量 ────────────────────────────────────────────────────────────────── */
+/* ── Variables ───────────────────────────────────────────────────────────── */
 :root {
-  --bg: #0d0d0d;
-  --surface: #161616;
-  --surface2: #1e1e1e;
-  --border: #2a2a2a;
+  --bg: #0a0a0b;
+  --surface: #141416;
+  --surface2: #1c1c1f;
+  --border: #2a2a2e;
   --text: #e0e0e0;
-  --muted: #555;
+  --muted: #71717a;
   --accent: #00c8ff;
-  --green: #00e676;
-  --red: #ff1744;
-  --yellow: #ffd600;
-  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-  font-size: 13px;
+  --accent-glow: rgba(0, 200, 255, 0.3);
+  --green: #10b981;
+  --red: #ef4444;
+  --yellow: #f59e0b;
+  --panel-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  /* Base font size increased */
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  font-size: 15px; 
 }
 
 * {
@@ -33,606 +36,292 @@ body {
 header {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 6px 14px;
+  gap: 20px;
+  padding: 10px 20px;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
+  z-index: 100;
 }
 
 header h1 {
-  font-size: 14px;
+  font-size: 18px;
+  font-weight: 800;
   color: var(--accent);
-  letter-spacing: 2px;
-  white-space: nowrap;
+  letter-spacing: 1px;
+  text-transform: uppercase;
 }
 
-/* ── Tabs ────────────────────────────────────────────────────────────────── */
 .tabs {
   display: flex;
-  gap: 2px;
-  flex: 1;
+  gap: 8px;
 }
 
 .tab {
   background: transparent;
   color: var(--muted);
   border: none;
-  border-bottom: 2px solid transparent;
-  padding: 4px 14px;
+  padding: 8px 18px;
   cursor: pointer;
-  font-size: 13px;
-  transition:
-    color 0.15s,
-    border-color 0.15s;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: all 0.2s;
 }
+
 .tab:hover {
+  background: var(--surface2);
   color: var(--text);
 }
+
 .tab.active {
-  color: var(--accent);
-  border-bottom-color: var(--accent);
+  background: var(--accent);
+  color: var(--bg);
 }
 
-.status-on {
-  color: var(--green);
-  white-space: nowrap;
-  font-size: 12px;
-}
-.status-off {
-  color: var(--muted);
-  white-space: nowrap;
-  font-size: 12px;
-}
-.udp-status {
-  min-width: 90px;
-}
-.udp-ctrl-btn {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid var(--border);
-  color: var(--text);
-  border-radius: 5px;
-  padding: 3px 11px;
-  font-size: 12px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition:
-    background 0.15s,
-    border-color 0.15s;
-}
-.udp-ctrl-btn:disabled {
-  opacity: 0.4;
-  cursor: default;
-}
-.udp-ctrl-btn.udp-ctrl-stop {
-  border-color: var(--red);
-  color: var(--red);
-}
-.udp-ctrl-btn.udp-ctrl-start {
-  border-color: var(--green);
-  color: var(--green);
-}
-.udp-ctrl-btn:not(:disabled):hover {
-  background: rgba(255, 255, 255, 0.14);
-}
-
-/* ── Tab Panels ─────────────────────────────────────────────────────────── */
-.tab-panel {
-  flex: 1;
-  overflow: auto;
-  padding: 10px;
-  display: block;
-}
-.tab-panel.hidden {
-  display: none;
-}
-#tab-route {
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-}
-#tab-route:has(.rm-collapsed) {
-  flex: 0 0 auto;
-}
-#route-map {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  min-height: 0;
-}
-#route-map:has(.rm-collapsed) {
-  flex: 0 0 auto;
-}
-
-/* ── Panel Toolbar ───────────────────────────────────────────────────────── */
-.panel-toolbar {
+/* ── Dashboard Layout ────────────────────────────────────────────────────── */
+.dashboard-toolbar {
+  padding: 12px 16px 0 16px;
   position: relative;
-  margin-bottom: 8px;
-}
-
-.panel-toggle-btn {
-  background: var(--surface2);
-  color: var(--muted);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 4px 10px;
-  cursor: pointer;
-  font-size: 12px;
-}
-.panel-toggle-btn:hover {
-  color: var(--text);
-}
-
-.panel-menu {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  z-index: 100;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 8px 12px;
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 4px 16px;
-  min-width: 360px;
-  box-shadow: 0 4px 20px #000a;
-}
-
-.panel-check {
   display: flex;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  color: var(--text);
-  font-size: 12px;
-  white-space: nowrap;
-}
-.panel-check input {
-  accent-color: var(--accent);
-}
-
-/* ── Dashboard Grid ──────────────────────────────────────────────────────── */
-.dashboard {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 10px;
 }
 
-.card {
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  grid-auto-rows: min-content;
+  gap: 20px;
+  padding: 20px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.dashboard-component {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 10px 14px;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: var(--panel-shadow);
+  height: fit-content;
+  /* Enable Container Queries */
+  container-type: inline-size;
 }
 
 .card-title {
-  font-size: 11px;
-  letter-spacing: 1px;
+  padding: 12px 16px;
+  font-size: 12px;
+  font-weight: 700;
   color: var(--muted);
   text-transform: uppercase;
-  margin-bottom: 8px;
-}
-
-/* ── Draggable / Floating Card ───────────────────────────────────────────── */
-.card-floating {
-  position: fixed;
-  z-index: 900;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.6);
-  resize: both;
-  overflow: auto;
-}
-.card-draggable {
+  letter-spacing: 1px;
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid var(--border);
   cursor: grab;
-  user-select: none;
-}
-.card-draggable:active {
-  cursor: grabbing;
 }
 
-/* ── G-Force Panel ───────────────────────────────────────────────────────── */
-.gforce-panel {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-}
-.gforce-plot-wrap {
-  display: flex;
-  gap: 4px;
-  align-items: center;
-  flex-shrink: 0;
-}
-.gforce-panel canvas {
-  border-radius: 6px;
-  background: rgba(0, 0, 0, 0.35);
-  flex-shrink: 0;
-}
-.gforce-vals {
+/* Dynamic Font Scaling via Container Units */
+.card-content {
+  padding: 20px;
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  min-width: 100px;
+  justify-content: center;
 }
 
-/* ── Core Card ───────────────────────────────────────────────────────────── */
-.core-row {
+/* ── UI Elements with Dynamic Sizing ────────────────────────────────────── */
+.kv-row {
   display: flex;
-  gap: 16px;
-  align-items: flex-end;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
 }
 
-.big-block {
-  text-align: center;
-}
-
-.label {
-  font-size: 10px;
-  letter-spacing: 1px;
+.kv-label {
   color: var(--muted);
-  text-transform: uppercase;
+  /* Scales with panel width */
+  font-size: clamp(11px, 4cqw, 13px);
+  font-weight: 600;
+}
+
+.kv-val {
+  font-family: 'JetBrains Mono', monospace;
+  /* Scales with panel width */
+  font-size: clamp(14px, 5cqw, 18px);
+  font-weight: 700;
+}
+
+.kv-unit {
+  font-size: 0.7em;
+  color: var(--muted);
+  margin-left: 2px;
 }
 
 .big-val {
-  font-size: 52px;
-  font-weight: 700;
-  line-height: 1;
-  color: var(--text);
-}
-.big-val.accent {
+  /* Prominent scaling for core values */
+  font-size: clamp(32px, 12cqw, 56px);
+  font-weight: 900;
   color: var(--accent);
-}
-.unit {
-  font-size: 11px;
-  color: var(--muted);
+  text-align: center;
 }
 
-/* ── Progress Bars ───────────────────────────────────────────────────────── */
-.bar-track {
-  height: 7px;
-  background: var(--border);
+/* ── Component Specifics ────────────────────────────────────────────────── */
+
+.pedal-bar-track {
+  height: clamp(8px, 3cqw, 14px);
+  background: var(--surface2);
+  border-radius: 7px;
+  margin-top: 6px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.tire-unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.tires-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
+  gap: 20px 40px;
+  justify-items: center;
+  padding: 10px;
+}
+
+.tire-bar-track {
+  width: clamp(24px, 10cqw, 40px);
+  height: clamp(50px, 18cqw, 80px);
+  background: var(--surface2);
   border-radius: 4px;
   overflow: hidden;
-}
-.mt4 {
-  margin-top: 4px;
-}
-.bar {
-  height: 100%;
-  border-radius: 4px;
-  transition: width 80ms linear;
-  width: 0%;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
 }
 
-/* ── KV Grid ─────────────────────────────────────────────────────────────── */
-.kv-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px 12px;
-}
-
-.kv-item .kv-label {
-  font-size: 10px;
-  color: var(--muted);
-  text-transform: uppercase;
-}
-.kv-item .kv-val {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text);
-}
-
-.kv-row {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-}
-.kv-label {
-  font-size: 10px;
-  color: var(--muted);
-  text-transform: uppercase;
-}
-.kv-val {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text);
-}
-.kv-val.accent {
-  color: var(--accent);
-}
-.kv-val.mono {
-  font-family: monospace;
-}
-.mt {
-  margin-top: 8px;
-}
-.ml {
-  margin-left: 12px;
-}
-
-/* ── Tire Grid ───────────────────────────────────────────────────────────── */
-.tire-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 6px;
-}
-
-.tire-cell {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 5px;
-  padding: 5px 8px;
-  display: flex;
-  justify-content: space-between;
-  font-size: 14px;
-  transition: border-color 0.3s;
+.tire-bar-fill {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  background: var(--accent);
+  transition: height 0.1s ease, background-color 0.2s;
 }
 
 .tire-label {
+  font-size: 11px;
+  font-weight: 800;
   color: var(--muted);
-  font-size: 10px;
-  align-self: center;
 }
 
-/* ── Tire Detail Table ───────────────────────────────────────────────────── */
-.tire-detail-grid {
-  display: grid;
-  grid-template-columns: 60px 1fr 1fr 1fr 1fr;
-  gap: 4px 8px;
-  font-size: 12px;
-  align-items: center;
-}
-.td-header {
-  color: var(--accent);
-  font-size: 10px;
-  font-weight: 700;
+.tire-info {
   text-align: center;
-}
-.td-label {
-  color: var(--muted);
-  font-size: 10px;
-}
-.td-val {
-  text-align: center;
-  font-family: monospace;
 }
 
-/* ── Tire Vertical Bars ──────────────────────────────────────────────────── */
-.tire-vbar-section {
-  margin-top: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+.tire-val { 
+  font-weight: 700; 
+  font-size: clamp(12px, 4.5cqw, 15px); 
+  font-family: 'JetBrains Mono', monospace;
 }
-.tire-vbar-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.tire-vbar-title {
+
+.tire-temp {
   font-size: 11px;
   color: var(--muted);
-  font-weight: 600;
 }
-.tire-vbar-row {
-  display: flex;
-  align-items: flex-end;
-  gap: 6px;
-  height: 110px;
+
+.minimap-canvas {
+  width: 100%;
+  height: 260px;
 }
-.tire-vbar-label {
-  font-size: 9px;
-  color: var(--muted);
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  align-self: flex-end;
-  margin-bottom: 18px;
-}
-.tire-vbar-cell {
+
+.tab-panel {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  overflow: hidden;
+}
+
+.tab-panel > div {
   flex: 1;
   height: 100%;
-  gap: 4px;
-}
-.tire-vbar-track {
-  flex: 1;
-  width: 28px;
-  background: var(--surface-alt, rgba(255, 255, 255, 0.06));
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  position: relative;
-  overflow: hidden;
-}
-.tire-vbar-fill {
-  position: absolute;
-  bottom: 0;
-  left: 0;
   width: 100%;
-  height: 0%;
-  border-radius: 3px;
-  transition:
-    height 0.08s ease-out,
-    background 0.08s ease-out;
-}
-.tire-vbar-num {
-  font-size: 10px;
-  font-family: monospace;
-  color: var(--fg);
-  min-width: 32px;
-  text-align: center;
-}
-
-/* ── Charts ──────────────────────────────────────────────────────────────── */
-.charts-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 12px;
-}
-
-.chart-box {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 10px;
-  overflow: hidden;
-}
-
-.chart-title {
-  font-size: 11px;
-  letter-spacing: 1px;
-  color: var(--muted);
-  text-transform: uppercase;
-  margin-bottom: 6px;
-}
-
-.chart-canvas {
-  display: block;
-  width: 100%;
-  border-radius: 4px;
-}
-
-/* ── Route Map ───────────────────────────────────────────────────────────── */
-.rm-wrap {
   display: flex;
   flex-direction: column;
-  flex: 1;
-  min-height: 0;
-  gap: 0;
 }
-.rm-wrap.rm-collapsed {
-  flex: 0 0 auto;
-}
-.rm-body {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-  transition: max-height 0.25s ease;
-  max-height: 2000px;
-}
-.rm-wrap.rm-collapsed .rm-body {
-  max-height: 0;
-  overflow: hidden;
-}
-.rm-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 8px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-}
-.rm-divider {
-  width: 1px;
-  height: 16px;
-  background: var(--border);
-  margin: 0 2px;
-  flex-shrink: 0;
-}
-.rm-btn {
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid var(--border);
-  color: var(--muted);
-  border-radius: 5px;
-  padding: 3px 10px;
-  font-size: 12px;
-  cursor: pointer;
-  transition:
-    background 0.12s,
-    color 0.12s;
-}
-.rm-btn:hover {
-  background: rgba(255, 255, 255, 0.14);
-  color: var(--text);
-}
-.rm-btn.rm-active {
-  border-color: var(--accent);
-  color: var(--accent);
-}
-.rm-btn.rm-toggle {
-  font-weight: 600;
-  letter-spacing: 0.3px;
-}
-.rm-info {
-  font-size: 11px;
-  color: var(--muted);
-  margin-left: 4px;
-}
-.rm-canvases {
-  flex: 1;
-  position: relative;
-  overflow: hidden;
-}
-.rm-canvas {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-.rm-hidden {
+
+.hidden {
   display: none !important;
 }
-.rm-hint {
-  padding: 4px 8px;
-  font-size: 10px;
-  color: var(--muted);
-  background: var(--surface);
-  border-top: 1px solid var(--border);
-  flex-shrink: 0;
+
+/* ── Utilities ──────────────────────────────────────────────────────────── */
+.btn {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
 }
 
-/* ── Settings / Export ───────────────────────────────────────────────────── */
-.settings-panel,
-.export-panel {
-  max-width: 640px;
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-thumb { background: var(--surface2); border: 2px solid var(--bg); }
+
+/* ── Settings & Export UI ────────────────────────────────────────────────── */
+.settings-panel, .export-panel {
+  padding: 30px;
+  max-width: 600px;
   margin: 0 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
 .settings-title {
-  font-size: 15px;
+  font-size: 18px;
+  font-weight: 700;
   color: var(--accent);
-  letter-spacing: 1px;
-  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+  margin-bottom: 4px;
 }
 
 .settings-section {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 14px 16px;
-  margin-bottom: 12px;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
 
 .settings-label {
-  font-size: 11px;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text);
 }
 
 .settings-row {
   display: flex;
-  gap: 8px;
+  gap: 12px;
   align-items: center;
 }
 
 .settings-input {
   background: var(--bg);
-  color: var(--text);
   border: 1px solid var(--border);
-  border-radius: 5px;
-  padding: 5px 10px;
-  font-size: 13px;
-  width: 100px;
+  color: var(--text);
+  padding: 10px 14px;
+  border-radius: 6px;
+  font-size: 14px;
   outline: none;
+  transition: border-color 0.2s;
 }
+
 .settings-input:focus {
   border-color: var(--accent);
 }
@@ -641,213 +330,196 @@ header h1 {
   background: var(--surface2);
   color: var(--text);
   border: 1px solid var(--border);
-  border-radius: 5px;
-  padding: 5px 14px;
+  padding: 10px 16px;
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 12px;
-  white-space: nowrap;
+  font-weight: 600;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
+
 .settings-btn:hover:not(:disabled) {
-  border-color: var(--accent);
-  color: var(--accent);
+  background: var(--border);
 }
+
 .settings-btn:disabled {
-  opacity: 0.35;
-  cursor: default;
+  opacity: 0.5;
+  cursor: not-allowed;
 }
-.settings-btn.btn-red {
+
+.btn-red {
   color: var(--red);
-  border-color: var(--red);
+  border-color: rgba(239, 68, 68, 0.3);
 }
-.settings-btn.btn-green {
+
+.btn-red:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.btn-green {
   color: var(--green);
-  border-color: var(--green);
+  border-color: rgba(16, 185, 129, 0.3);
 }
-.settings-btn.btn-muted {
-  color: var(--muted);
+
+.btn-green:hover:not(:disabled) {
+  background: rgba(16, 185, 129, 0.1);
 }
 
 .settings-hint {
-  font-size: 11px;
-  color: var(--muted);
-  margin-top: 8px;
-  line-height: 1.5;
-}
-
-.settings-status {
-  font-size: 12px;
-  margin-top: 6px;
-  display: block;
-}
-
-.export-controls {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 10px;
-}
-.export-info {
   font-size: 12px;
   color: var(--muted);
   margin-top: 4px;
 }
 
-.csv-preview {
-  font-family: monospace;
-  font-size: 10px;
+.export-controls {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.export-info {
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
   color: var(--muted);
-  background: var(--bg);
-  border-radius: 4px;
-  padding: 8px;
-  margin-top: 6px;
-  word-break: break-all;
-  line-height: 1.6;
 }
 
-.settings-guide {
-  color: var(--muted);
-  font-size: 12px;
-  padding-left: 18px;
-  line-height: 2;
+.settings-status {
+  color: var(--accent);
+  font-weight: bold;
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+/* ── Replay & Record Mode ────────────────────────────────────────────────── */
+body.replay-mode, body.record-mode {
+  position: relative;
 }
 
-body {
-  background: var(--bg);
-  color: var(--text);
-  height: 100vh;
+body.replay-mode {
+  border: 4px solid var(--accent);
+  box-shadow: inset 0 0 50px rgba(0, 200, 255, 0.2);
+}
+
+body.record-mode {
+  border: 4px solid var(--red);
+  box-shadow: inset 0 0 50px rgba(239, 68, 68, 0.2);
+}
+
+body.replay-mode::after, body.record-mode::after {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 16px;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 14px;
+  z-index: 9999;
+  pointer-events: none;
+  animation: pulse 2s infinite;
+}
+
+body.replay-mode::after {
+  content: "⏪ 回放模式进行中 (REPLAYING)";
+  background: rgba(0, 200, 255, 0.2);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+}
+
+body.record-mode::after {
+  content: "⏺ 录制模式进行中 (RECORDING)";
+  background: rgba(239, 68, 68, 0.2);
+  color: var(--red);
+  border: 1px solid var(--red);
+}
+
+@keyframes pulse {
+  0% { opacity: 0.7; }
+  50% { opacity: 1; box-shadow: 0 0 15px currentColor; }
+  100% { opacity: 0.7; }
+}
+
+/* ── RouteMap ──────────────────────────────────────────────────────────── */
+.rm-wrap {
   display: flex;
   flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background: var(--bg);
 }
 
-header {
+.rm-toolbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 8px 16px;
+  padding: 8px 12px;
+  gap: 8px;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
-  font-size: 13px;
 }
 
-header h1 {
-  font-size: 15px;
-  color: var(--accent);
-  letter-spacing: 2px;
-}
-
-.status-on {
-  color: var(--green);
-}
-.status-off {
+.rm-btn {
+  background: var(--surface2);
   color: var(--muted);
-}
-
-#app {
-  flex: 1;
-  overflow: auto;
-  padding: 12px;
-}
-
-.dashboard {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 12px;
-}
-
-.card {
-  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 12px 16px;
-}
-
-.label {
-  font-size: 11px;
-  letter-spacing: 1px;
-  color: var(--muted);
-  text-transform: uppercase;
-}
-
-.mt {
-  margin-top: 10px;
-}
-
-.value {
-  font-size: 48px;
-  font-weight: 700;
-  line-height: 1.1;
-  color: var(--accent);
-}
-
-.value-sm {
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--text);
-  margin-top: 2px;
-}
-
-.unit {
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
   font-size: 12px;
-  color: var(--muted);
 }
 
-.big-number .value {
-  font-size: 64px;
-}
-
-/* 进度条 */
-.bar-track {
-  margin-top: 6px;
-  height: 8px;
+.rm-btn:hover {
+  color: var(--text);
   background: var(--border);
-  border-radius: 4px;
-  overflow: hidden;
 }
 
-.bar {
-  height: 100%;
-  border-radius: 4px;
-  transition: width 80ms linear;
-  width: 0%;
+.rm-active {
+  color: var(--accent);
+  border-color: var(--accent);
 }
 
-.rpm-color {
-  background: var(--accent);
-}
-.accel-color {
-  background: var(--green);
-}
-.brake-color {
-  background: var(--red);
-}
-.best-color {
-  color: var(--yellow);
+.rm-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--border);
 }
 
-/* 胎温格 */
-.tire-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-top: 8px;
+.rm-info {
+  font-size: 12px;
+  color: var(--text);
 }
 
-.tire-cell {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 6px 10px;
+.rm-body {
+  flex: 1;
   display: flex;
-  justify-content: space-between;
-  font-size: 14px;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
 }
 
-.tire-label {
-  color: var(--muted);
+.rm-canvases {
+  flex: 1;
+  position: relative;
+}
+
+.rm-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.rm-hidden {
+  display: none !important;
+}
+
+.rm-hint {
+  padding: 8px;
+  text-align: center;
   font-size: 11px;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
 }

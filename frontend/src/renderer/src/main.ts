@@ -12,7 +12,11 @@ const charts = new Charts(document.getElementById("charts")!);
 const routeMap = new RouteMap(document.getElementById("route-map")!);
 const exportPanel = new ExportPanel(
   document.getElementById("export-panel")!,
-  telemetryWS,
+  (data) => {
+    dashboard.update(data);
+    charts.push(data);
+    routeMap.push(data);
+  }
 );
 new SettingsPanel(document.getElementById("settings-panel")!, telemetryWS);
 
@@ -41,6 +45,11 @@ telemetryWS.onData((data) => {
   exportPanel.record(data);
 });
 
+window.addEventListener("app:modeChange", (e: any) => {
+  dashboard.setMode(e.detail);
+});
+dashboard.setMode(localStorage.getItem("appMode") as any || "casual");
+
 // ── 连接状态 ───────────────────────────────────────────────────────────────────
 const statusEl = document.getElementById("status")!;
 const udpStatusEl = document.getElementById("udp-status")!;
@@ -57,12 +66,12 @@ document.addEventListener("ws:status", (e) => {
 });
 
 document.addEventListener("ws:udpStatus", (e: Event) => {
-  const { listening, port } = (
-    e as CustomEvent<{ listening: boolean; port: number }>
+  const { listening, ip, port } = (
+    e as CustomEvent<{ listening: boolean; ip: string; port: number }>
   ).detail;
   udpListening = listening;
   if (listening) {
-    udpStatusEl.textContent = `◉ UDP :${port}`;
+    udpStatusEl.textContent = `◉ UDP ${ip}:${port}`;
     udpStatusEl.className = "status-on udp-status";
     udpToggleBtn.textContent = "■ 停止监听";
     udpToggleBtn.classList.add("udp-ctrl-stop");
@@ -80,7 +89,8 @@ udpToggleBtn.addEventListener("click", () => {
   if (udpListening) {
     telemetryWS.send({ type: "stopUDP" });
   } else {
+    const ip = localStorage.getItem("udpIP") ?? "0.0.0.0";
     const port = parseInt(localStorage.getItem("udpPort") ?? "5300", 10);
-    telemetryWS.send({ type: "startUDP", udpPort: port });
+    telemetryWS.send({ type: "startUDP", udpIP: ip, udpPort: port });
   }
 });

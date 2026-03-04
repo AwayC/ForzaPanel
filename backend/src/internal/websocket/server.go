@@ -14,6 +14,7 @@ const DefaultAddr = ":8765"
 // Command 是前端发往后端的控制命令
 type Command struct {
 	Type    string `json:"type"`
+	UDPIP   string `json:"udpIP,omitempty"`
 	UDPPort int    `json:"udpPort,omitempty"`
 }
 
@@ -80,7 +81,7 @@ func (s *Server) handleWS(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		var cmd Command
-		if json.Unmarshal(msg, &cmd) == nil && cmd.Type != "" {
+		if err := json.Unmarshal(msg, &cmd); err == nil && cmd.Type != "" {
 			select {
 			case s.CommandCh <- cmd:
 			default:
