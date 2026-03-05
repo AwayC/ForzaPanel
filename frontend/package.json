@@ -8,8 +8,8 @@
     "build": "electron-vite build",
     "preview": "electron-vite preview",
     "start": "electron .",
-    "prebuild:win": "cd ../backend && go build -o ../frontend/resources/server.exe ./src/server/main.go",
-    "build:win": "npm run build && electron-builder --win --config"
+    "prebuild:win": "cd ../backend && go build -o ../frontend/resources/server.exe -ldflags=\"-s -w\" ./src/server/main.go",
+    "build:win": "npm run build && electron-builder --win"
   },
   "devDependencies": {
     "@electron-toolkit/tsconfig": "^1.0.1",
@@ -39,7 +39,7 @@
       }
     ],
     "win": {
-      "target": "portable"
+      "target": "nsis"
     }
   }
 }
