@@ -1,8 +1,11 @@
 # ForzaPanel - 赛车遥测数据面板
 
+<img src="./assert/panel.png" width="50%"><img src="./assert/route.png" width="50%" height="50%">
 基于 **Go** 和 **Electron** 的 Forza 系列游戏（Forza Horizon 4/5, Forza Motorsport 7/8）UDP 遥测数据监听器与实时数据面板。
 
 能够实时获取并在仪表盘上展示你在 Forza 中的驾驶数据，提供性能分析、2D/3D 路线追踪以及数据导出与回放功能。
+
+windows端[下载链接](https://github.com/AwayC/ForzaPanel/releases/tag/v1.0)
 
 ## 🛠️ 技术栈
 
