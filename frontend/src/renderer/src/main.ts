@@ -38,7 +38,14 @@ document.querySelectorAll<HTMLButtonElement>(".tab").forEach((btn) => {
 });
 
 // ── 数据管线 ───────────────────────────────────────────────────────────────────
+let isReplaying = false;
+window.addEventListener("replay:status", (e: any) => {
+  isReplaying = e.detail;
+});
+
 telemetryWS.onData((data) => {
+  if (isReplaying) return; // Ignore live WS data if we are currently playing back a CSV
+  
   dashboard.update(data);
   charts.push(data);
   routeMap.push(data);
@@ -89,7 +96,7 @@ udpToggleBtn.addEventListener("click", () => {
   if (udpListening) {
     telemetryWS.send({ type: "stopUDP" });
   } else {
-    const ip = localStorage.getItem("udpIP") ?? "0.0.0.0";
+    const ip = localStorage.getItem("udpIP") ?? "127.0.0.1";
     const port = parseInt(localStorage.getItem("udpPort") ?? "5300", 10);
     telemetryWS.send({ type: "startUDP", udpIP: ip, udpPort: port });
   }

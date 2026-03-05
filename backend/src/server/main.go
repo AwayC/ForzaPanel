@@ -25,11 +25,11 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
-	ws := wsserver.New(":8765")
+	ws := wsserver.New("127.0.0.1:8765")
 
-	// 可热重启的 UDP 管理器，默认 0.0.0.0:5300
+	// 可热重启的 UDP 管理器，默认 127.0.0.1:5300
 	mgr := newUDPManager(ctx, ws)
-	mgr.start("0.0.0.0", 5300)
+	mgr.start("127.0.0.1", 5300)
 
 	// 处理前端下发的命令
 	go func() {

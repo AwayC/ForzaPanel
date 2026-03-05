@@ -9,7 +9,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-const DefaultAddr = ":8765"
+const DefaultAddr = "127.0.0.1:8765"
 
 // Command 是前端发往后端的控制命令
 type Command struct {

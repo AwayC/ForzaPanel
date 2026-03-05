@@ -170,13 +170,48 @@ header h1 {
 
 /* ── Component Specifics ────────────────────────────────────────────────── */
 
+.pedals-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.pedal-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pedal-label {
+  width: 60px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
 .pedal-bar-track {
+  flex: 1;
   height: clamp(8px, 3cqw, 14px);
   background: var(--surface2);
   border-radius: 7px;
-  margin-top: 6px;
   overflow: hidden;
   border: 1px solid rgba(255,255,255,0.05);
+  position: relative;
+}
+
+.pedal-bar-fill {
+  height: 100%;
+  width: 0%;
+  transition: width 0.1s ease;
+}
+
+.pedal-val {
+  width: 40px;
+  text-align: right;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .tire-unit {

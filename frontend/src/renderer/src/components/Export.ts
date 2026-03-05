@@ -103,7 +103,7 @@ export class ExportPanel {
     const reader = new FileReader();
     reader.onload = (event) => {
       const csv = event.target?.result as string;
-      const lines = csv.split("\n");
+      const lines = csv.split(/\r?\n/);
       const headers = lines[0].split(",");
       const data: TelemetryData[] = [];
 
@@ -134,6 +134,7 @@ export class ExportPanel {
       this.replaying = false;
       playBtn.textContent = "\u25b6 \u5f00\u59cb\u56de\u653e"; // ▶ 开始回放
       document.body.classList.remove("replay-mode");
+      window.dispatchEvent(new CustomEvent("replay:status", { detail: false }));
       return;
     }
 
@@ -143,8 +144,9 @@ export class ExportPanel {
     playBtn.textContent = "\u25a0 \u505c\u6b62\u56de\u653e"; // ■ 停止回放
     document.body.classList.add("replay-mode");
     
-    // Notify other components to clear old lines
+    // Notify other components to clear old lines and ignore live WS data
     window.dispatchEvent(new Event("replay:start"));
+    window.dispatchEvent(new CustomEvent("replay:status", { detail: true }));
 
     let idx = 0;
     let startRealTime = performance.now();
@@ -157,6 +159,7 @@ export class ExportPanel {
         this.replaying = false;
         playBtn.textContent = "\u25b6 \u5f00\u59cb\u56de\u653e"; // ▶ 开始回放
         document.body.classList.remove("replay-mode");
+        window.dispatchEvent(new CustomEvent("replay:status", { detail: false }));
         return;
       }
 

@@ -1,5 +1,5 @@
 {
-  "name": "forza-telemetry-frontend",
+  "name": "forza-panel",
   "version": "1.0.0",
   "description": "Forza 遥测数据监控面板",
   "main": "out/main/index.js",
@@ -7,16 +7,39 @@
     "dev": "electron-vite dev",
     "build": "electron-vite build",
     "preview": "electron-vite preview",
-    "start": "electron ."
+    "start": "electron .",
+    "prebuild:win": "cd ../backend && go build -o ../frontend/resources/server.exe ./src/server/main.go",
+    "build:win": "npm run build && electron-builder --win --config"
   },
   "devDependencies": {
     "@electron-toolkit/tsconfig": "^1.0.1",
     "electron": "^33.0.0",
+    "electron-builder": "^24.13.3",
     "electron-vite": "^2.3.0",
     "typescript": "^5.7.2",
     "vite": "^5.0.0"
   },
   "dependencies": {
     "@electron-toolkit/utils": "^3.0.0"
+  },
+  "build": {
+    "appId": "com.forzapanel.app",
+    "productName": "ForzaPanel",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "out/**/*",
+      "resources/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "resources/server.exe",
+        "to": "server.exe"
+      }
+    ],
+    "win": {
+      "target": "portable"
+    }
   }
 }

@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	DefaultIP      = "0.0.0.0"
+	DefaultIP      = "127.0.0.1"
 	DefaultPort    = 5300
 	MaxPacketBytes = 512
 )

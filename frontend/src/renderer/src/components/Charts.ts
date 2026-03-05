@@ -261,6 +261,8 @@ export class Charts {
     this.pedals = new LineChart(this.root.querySelector("#ch-pedals")!, "踏板 (Pedals)", [
       { id: "accel", label: "油门(Thr)", color: "#00e676", unit: "%" },
       { id: "brake", label: "刹车(Brk)", color: "#ff1744", unit: "%" },
+      { id: "clutch", label: "离合(Clu)", color: "#ffea00", unit: "%" },
+      { id: "handbrake", label: "手刹(HB)", color: "#b388ff", unit: "%" },
     ]);
 
     this.integratedChart = new LineChart(this.root.querySelector("#ch-integrated-box")!, "", [
@@ -268,8 +270,10 @@ export class Charts {
       { id: "rpm", label: "RPM", color: "#ffd600", unit: "rpm" },
       { id: "gforce_x", label: "G纵向", color: "#00e676", unit: "g" },
       { id: "gforce_y", label: "G侧向", color: "#ff4081", unit: "g" },
-      { id: "accel", label: "油门", color: "#18ffff", unit: "%" },
-      { id: "brake", label: "刹车", color: "#ff5252", unit: "%" },
+      { id: "accel", label: "油门", color: "#00e676", unit: "%" },
+      { id: "brake", label: "刹车", color: "#ff1744", unit: "%" },
+      { id: "clutch", label: "离合", color: "#ffea00", unit: "%" },
+      { id: "handbrake", label: "手刹", color: "#b388ff", unit: "%" },
     ], true);
   }
 
@@ -299,7 +303,7 @@ export class Charts {
       if (this.showSpeed) activeIds.push("speed");
       if (this.showRpm) activeIds.push("rpm");
       if (this.showGforce) activeIds.push("gforce_x", "gforce_y");
-      if (this.showPedals) activeIds.push("accel", "brake");
+      if (this.showPedals) activeIds.push("accel", "brake", "clutch", "handbrake");
       
       this.integratedChart.setActiveSeries(activeIds);
       // Force a resize in case the container size changed
@@ -318,12 +322,14 @@ export class Charts {
   push(d: TelemetryData) {
     const G = 9.81;
     const vals = {
-      speed: d.Speed * 3.6,
-      rpm: d.CurrentEngineRpm,
-      gforce_x: d.AccelerationX / G,
-      gforce_y: d.AccelerationY / G,
-      accel: (d.Accel / 255) * 100,
-      brake: (d.Brake / 255) * 100,
+      speed: d.Speed ? d.Speed * 3.6 : 0,
+      rpm: d.CurrentEngineRpm || 0,
+      gforce_x: d.AccelerationX ? d.AccelerationX / G : 0,
+      gforce_y: d.AccelerationY ? d.AccelerationY / G : 0,
+      accel: d.Accel ? (d.Accel / 255) * 100 : 0,
+      brake: d.Brake ? (d.Brake / 255) * 100 : 0,
+      clutch: d.Clutch ? (d.Clutch / 255) * 100 : 0,
+      handbrake: d.HandBrake ? (d.HandBrake / 255) * 100 : 0,
     };
     
     if (this.useIntegrated) {

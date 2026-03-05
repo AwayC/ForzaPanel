@@ -11,7 +11,7 @@ export class SettingsPanel {
   }
 
   private render(): void {
-    const savedIP = localStorage.getItem("udpIP") ?? "0.0.0.0";
+    const savedIP = localStorage.getItem("udpIP") ?? "127.0.0.1";
     const savedPort = localStorage.getItem("udpPort") ?? "5300";
     const savedMode = localStorage.getItem("appMode") ?? "casual";
 

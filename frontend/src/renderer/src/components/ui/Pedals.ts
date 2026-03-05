@@ -15,9 +15,10 @@ export class PedalsComponent extends BaseComponent {
         ${this.tplBar("ACCEL", "accel", "var(--green)")}
         ${this.tplBar("BRAKE", "brake", "var(--red)")}
         ${this.tplBar("CLUTCH", "clutch", "var(--yellow)")}
+        ${this.tplBar("HANDBRK", "handbrake", "var(--accent)")}
       </div>
     `;
-    ["accel", "brake", "clutch"].forEach((id) => {
+    ["accel", "brake", "clutch", "handbrake"].forEach((id) => {
       this.bars[id] = {
         fill: this.contentElement.querySelector(`.bar-fill-${id}`)!,
         val: this.contentElement.querySelector(`.bar-val-${id}`)!,
@@ -46,5 +47,6 @@ export class PedalsComponent extends BaseComponent {
     updateBar("accel", d.Accel);
     updateBar("brake", d.Brake);
     updateBar("clutch", d.Clutch);
+    updateBar("handbrake", d.HandBrake);
   }
 }
